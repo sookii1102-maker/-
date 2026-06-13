@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수능 수학 4점 킬러 : 복합 삼각함수 교점 추론</title>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-color: #1e1e2e;
+            --panel-bg: #2a2a3c;
+            --text-color: #cdd6f4;
+            --accent-color: #f5c2e7; /* 킬러 문항의 매운맛 핑크 */
+            --success-color: #a6e3a1;
+            --danger-color: #f38ba8;
+            --grid-color: #45475a;
+            --sine-color: #f9e2af;
+            --line-color: #89b4fa;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 1300px;
+        }
+
+        .header h1 {
+            color: var(--accent-color);
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+            max-width: 1300px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+
+        .controls {
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            flex: 1.2;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .problem-box {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            font-size: 1.05em;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+
+        .canvas-container {
+            flex: 2;
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #181825;
+            border-radius: 8px;
+            width: 100%;
+            height: 500px;
+        }
+
+        .slider-section {
+            background-color: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .slider-section h3 {
+            margin: 0 0 10px 0;
+            font-size: 1em;
+            color: #bac2de;
+            border-bottom: 1px solid var(--grid-color);
+            padding-bottom: 5px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 12px;
+        }
+        .control-group:last-child { margin-bottom: 0; }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        label {
+            font-weight: 600;
+            color: #cdd6f4;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent-color);
+            margin: 5px 0;
+        }
+
+        input[type=number] {
+            background-color: #181825;
+            color: var(--text-color);
+            border: 1px solid var(--grid-color);
+            padding: 5px 10px;
+            border-radius: 4px;
+            width: 60px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .value-display {
+            font-family: monospace;
+            color: var(--accent-color);
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .status-box {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background-color: #181825;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .status-success {
+            color: var(--success-color);
+            border: 2px solid var(--success-color);
+            box-shadow: 0 0 15px rgba(166, 227, 161, 0.2);
+        }
+
+        .status-fail {
+            color: var(--text-color);
+            border: 2px solid var(--grid-color);
+        }
+        
+        .radio-group { display: flex; gap: 15px; margin-top: 5px; }
+        .radio-group label { font-weight: normal; font-size: 0.9em; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🔥 [킬러 대비] 복합 평행이동 삼각함수와 직선의 교점</h1>
+        <p style="margin:0; color:#a6adc8;">평행이동, 기울기, 절댓값이 얽힌 수능형 방정식의 해를 시각화하고 계수를 추론합니다.</p>
+    </div>
+
+    <div class="container">
+        <!-- 1. 제어 패널 (왼쪽) -->
+        <div class="controls">
+            <div class="problem-box" id="problemText">
+                <!-- 동적 텍스트 -->
+            </div>
+
+            <!-- 목표 설정 -->
+            <div class="slider-section">
+                <h3>📌 출제 조건 설정</h3>
+                <div class="control-group">
+                    <div class="label-row">
+                        <label>목표 교점 개수 (정답 조건)</label>
+                        <input type="number" id="targetRoots" value="5" min="1" max="30" onchange="updateAll()">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>함수 형태</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="funcType" value="abs" checked onchange="updateAll()"> 절댓값 포함 (꺾어 올리기)</label>
+                        <label><input type="radio" name="funcType" value="normal" onchange="updateAll()"> 기본형 (절댓값 없음)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 직선 조작 (y = mx + k) -->
+            <div class="slider-section">
+                <h3>📈 다항함수 (직선) 설정: \( y = mx + k \)</h3>
+                <div class="control-group">
+                    <div class="label-row">
+                        <label>기울기 (m)</label>
+                        <span id="mValDisplay" class="value-display">0.20</span>
+                    </div>
+                    <input type="range" id="sliderM" min="-1" max="1" step="0.01" value="0.2" oninput="updateAll()">
+                </div>
+                <div class="control-group">
+                    <div class="label-row">
+                        <label>y절편 (k)</label>
+                        <span id="kValDisplay" class="value-display">0.5</span>
+                    </div>
+                    <input type="range" id="sliderK" min="-2" max="2" step="0.1" value="0.5" oninput="updateAll()">
+                </div>
+            </div>
+
+            <!-- 삼각함수 조작 -->
+            <div class="slider-section" style="border-color: var(--sine-color);">
+                <h3 style="color: var(--sine-color);">🌊 삼각함수 설정 (수험생 추론 영역)</h3>
+                
+                <div class="control-group">
+                    <div class="label-row">
+                        <label>주기 압축 계수 (n)</label>
+                        <span id="nValDisplay" class="value-display" style="color:var(--sine-color); font-size:1.2em;">2</span>
+                    </div>
+                    <input type="range" id="sliderN" min="1" max="10" step="1" value="2" oninput="updateAll()">
+                </div>
+                
+                <div class="control-group">
+                    <div class="label-row">
+                        <label>x축 평행이동 (pπ)</label>
+                        <span id="pValDisplay" class="value-display">0.0π</span>
+                    </div>
+                    <input type="range" id="sliderP" min="-2" max="2" step="0.1" value="0" oninput="updateAll()">
+                </div>
+
+                <div class="control-group">
+                    <div class="label-row">
+                        <label>y축 평행이동 (q) - 폴딩 기준점</label>
+                        <span id="qValDisplay" class="value-display">-0.5</span>
+                    </div>
+                    <input type="range" id="sliderQ" min="-2" max="2" step="0.1" value="-0.5" oninput="updateAll()">
+                </div>
+            </div>
+
+            <div id="statusBox" class="status-box status-fail">
+                현재 교점: 분석 중...
+            </div>
+        </div>
+
+        <!-- 2. 그래프 캔버스 (오른쪽) -->
+        <div class="canvas-container">
+            <canvas id="graphCanvas" width="800" height="500"></canvas>
+            <p style="margin-top: 15px; color: #a6adc8; font-size: 0.9em;">
+                ※ 그래프 뷰포트: x축 [-1, 7], y축 [-3, 3] &nbsp; | &nbsp; 근 탐색 구간: \( 0 \le x \le 2\pi \)
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 40;
+        
+        // 그래프 표시 뷰포트 (실제 근 탐색은 0 ~ 2pi 에서만 진행)
+        const xMin = -1;
+        const xMax = 7;
+        const yMin = -3;
+        const yMax = 3;
+
+        // 좌표 변환
+        function toPx(x) { return padding + ((x - xMin) / (xMax - xMin)) * (width - 2 * padding); }
+        function toPy(y) { return height - padding - ((y - yMin) / (yMax - yMin)) * (height - 2 * padding); }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // X, Y 메인 축
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#cdd6f4';
+            ctx.beginPath();
+            ctx.moveTo(toPx(xMin), toPy(0)); ctx.lineTo(toPx(xMax), toPy(0));
+            ctx.moveTo(toPx(0), toPy(yMin)); ctx.lineTo(toPx(0), toPy(yMax));
+            ctx.stroke();
+
+            // 배경 격자 (x: 1단위, y: 1단위)
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#313244';
+            ctx.beginPath();
+            for(let x=Math.ceil(xMin); x<=xMax; x++) { ctx.moveTo(toPx(x), toPy(yMin)); ctx.lineTo(toPx(x), toPy(yMax)); }
+            for(let y=Math.ceil(yMin); y<=yMax; y++) { ctx.moveTo(toPx(xMin), toPy(y)); ctx.lineTo(toPx(xMax), toPy(y)); }
+            ctx.stroke();
+
+            // 교점 탐색 구간 강조 (0 ~ 2pi)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fillRect(toPx(0), toPy(yMax), toPx(2*Math.PI) - toPx(0), height - 2*padding);
+            
+            ctx.strokeStyle = '#a6e3a1';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(toPx(2*Math.PI), toPy(yMin)); ctx.lineTo(toPx(2*Math.PI), toPy(yMax));
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 라벨링
+            ctx.fillStyle = '#a6adc8';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('0', toPx(0) - 10, toPy(0) + 15);
+            ctx.fillText('π', toPx(Math.PI), toPy(0) + 15);
+            ctx.fillStyle = '#a6e3a1';
+            ctx.fillText('2π', toPx(2*Math.PI), toPy(0) + 15);
+            
+            ctx.fillStyle = '#a6adc8';
+            ctx.textAlign = 'right';
+            ctx.fillText('1', toPx(0) - 5, toPy(1) + 4);
+            ctx.fillText('2', toPx(0) - 5, toPy(2) + 4);
+            ctx.fillText('-1', toPx(0) - 5, toPy(-1) + 4);
+        }
+
+        function updateAll() {
+            // 값 읽어오기
+            const isAbs = document.querySelector('input[name="funcType"]:checked').value === 'abs';
+            const targetRoots = parseInt(document.getElementById('targetRoots').value);
+            const m = parseFloat(document.getElementById('sliderM').value);
+            const k = parseFloat(document.getElementById('sliderK').value);
+            const n = parseInt(document.getElementById('sliderN').value);
+            const p = parseFloat(document.getElementById('sliderP').value);
+            const q = parseFloat(document.getElementById('sliderQ').value);
+
+            // 디스플레이 업데이트
+            document.getElementById('mValDisplay').innerText = m.toFixed(2);
+            document.getElementById('kValDisplay').innerText = k.toFixed(1);
+            document.getElementById('nValDisplay').innerText = n;
+            document.getElementById('pValDisplay').innerText = p.toFixed(1) + 'π';
+            document.getElementById('qValDisplay').innerText = q.toFixed(1);
+
+            // 수식 문자열 조립
+            let pStr = p === 0 ? '' : (p > 0 ? ` - ${p}\\pi` : ` + ${Math.abs(p)}\\pi`);
+            let qStr = q === 0 ? '' : (q > 0 ? ` + ${q}` : ` - ${Math.abs(q)}`);
+            let innerFunc = `\\sin( ${n}(x${pStr}) ) ${qStr}`;
+            let fStr = isAbs ? `| ${innerFunc} |` : `${innerFunc}`;
+            
+            let mStr = m === 0 ? '' : (m === 1 ? 'x' : (m === -1 ? '-x' : `${m}x`));
+            let kStr = k === 0 ? (m === 0 ? '0' : '') : (k > 0 ? (m === 0 ? `${k}` : ` + ${k}`) : ` - ${Math.abs(k)}`);
+            let gStr = mStr + kStr;
+
+            const probText = `구간 \\( 0 \\le x \\le 2\\pi \\) 에서 방정식 <br><br>
+                <div style="text-align:center; font-size:1.2em; margin: 10px 0; color:var(--accent-color);">
+                \\( ${fStr} = ${gStr} \\)
+                </div>
+                의 실근의 개수가 <strong>${targetRoots}개</strong>가 되도록 하는 변수를 추론하시오.`;
+            
+            document.getElementById('problemText').innerHTML = probText;
+            if (window.MathJax) MathJax.typesetPromise([document.getElementById('problemText')]);
+
+            drawGrid();
+
+            // 1. 삼각함수 f(x) 그리기 (노란색)
+            const getF = (x) => {
+                let y = Math.sin(n * (x - p * Math.PI)) + q;
+                return isAbs ? Math.abs(y) : y;
+            };
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'var(--sine-color)';
+            ctx.lineWidth = 2.5;
+            for (let x = xMin; x <= xMax; x += 0.01) {
+                if (x === xMin) ctx.moveTo(toPx(x), toPy(getF(x)));
+                else ctx.lineTo(toPx(x), toPy(getF(x)));
+            }
+            ctx.stroke();
+
+            // 2. 다항함수(직선) g(x) 그리기 (파란색)
+            const getG = (x) => m * x + k;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = 'var(--line-color)';
+            ctx.lineWidth = 2;
+            ctx.moveTo(toPx(xMin), toPy(getG(xMin)));
+            ctx.lineTo(toPx(xMax), toPy(getG(xMax)));
+            ctx.stroke();
+
+            // 3. 초정밀 교점 찾기 (0 <= x <= 2pi)
+            let roots = [];
+            let dx = 0.002; // 극대/극소 스치는 접점을 잡기 위해 스텝을 매우 작게 설정
+            
+            for (let x = 0; x <= 2 * Math.PI; x += dx) {
+                let y0 = getF(x - dx) - getG(x - dx);
+                let y1 = getF(x) - getG(x);
+                let y2 = getF(x + dx) - getG(x + dx);
+
+                // 경우 1: 완벽한 교차 (부호 변경)
+                if (y0 * y1 < 0) {
+                    roots.push(x - dx/2);
+                } 
+                // 경우 2: 아슬아슬하게 스치는 접점 또는 뾰족점(첨점)에서의 접촉 
+                // (절댓값 차이가 0에 수렴하면서 극소값을 가질 때)
+                else if (Math.abs(y1) < 0.015) {
+                    if ((y0 >= y1 && y2 >= y1) || (y0 <= y1 && y2 <= y1)) {
+                        // 중복 방지 (이미 너무 가까운 곳에 근을 등록했다면 패스)
+                        if (roots.length === 0 || Math.abs(x - roots[roots.length - 1]) > 0.05) {
+                            roots.push(x);
+                        }
+                    }
+                }
+            }
+
+            // 양 끝점 미세 보정 (0과 2pi에서 만나는 경우)
+            if (Math.abs(getF(0) - getG(0)) < 0.01 && !roots.some(r => Math.abs(r) < 0.05)) roots.push(0);
+            if (Math.abs(getF(2*Math.PI) - getG(2*Math.PI)) < 0.01 && !roots.some(r => Math.abs(r - 2*Math.PI) < 0.05)) roots.push(2*Math.PI);
+
+            // 4. 교점 시각화 (빨간 점)
+            ctx.fillStyle = 'var(--danger-color)';
+            roots.forEach(r => {
+                ctx.beginPath();
+                ctx.arc(toPx(r), toPy(getG(r)), 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+
+            // 5. 정답 판독기 업데이트
+            const statusBox = document.getElementById('statusBox');
+            if (roots.length === targetRoots) {
+                statusBox.innerHTML = `🔥 현재 교점: ${roots.length}개 <br><span style="font-size:0.8em; font-weight:normal;">(조건 완벽 일치! 출제자의 설계가 맞아떨어졌습니다)</span>`;
+                statusBox.className = 'status-box status-success';
+            } else {
+                statusBox.innerHTML = `현재 교점: ${roots.length}개 <br><span style="font-size:0.8em; font-weight:normal;">(목표: ${targetRoots}개 / 접점과 꺾이는 위치를 확인하세요)</span>`;
+                statusBox.className = 'status-box status-fail';
+            }
+        }
+
+        window.onload = function() {
+            setTimeout(updateAll, 500);
+        }
+    </script>
+</body>
+</html>
